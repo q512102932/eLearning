@@ -25,8 +25,11 @@ exports.CreateUserHandler = async (event, context) => {
     if (!event.body || typeof event.body === undefined || event.body === null) {
         return formatResponse(Constants.ResponseCode.BAD_REQUEST_BODY, "User information is required for creating a user!");
     }
-    //TODO
+    //TODO Validate user Info e.g. if email address is valid
 
+
+
+    
     //Validate Duplication
     let emailDuplicateResult = await userRepository.getUserByEmail(event.body.email);
     Log.Verbose(
@@ -39,7 +42,7 @@ exports.CreateUserHandler = async (event, context) => {
     if (typeof emailDuplicateResult.error === undefined) {
         return formatResponse(Constants.ResponseCode.BAD_REQUEST_BODY, "Duplicated User Email.");
     }
-    //TODO username
+    //TODO validate username duplication 
 
     if (typeof event.session !== undefined) {
         //get user id from session

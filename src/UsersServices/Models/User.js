@@ -3,10 +3,11 @@ const DataObject = require("./DataObject");
 class User extends DataObject {
     constructor() {
         super();
-        this.profile = new Profile();
+        this.profile = {};
     }
 
     PushDbObjectRow(dbObjectRow) {
+        //TODO
         this.pk = dbObjectRow.pk;
         this.username = dbObjectRow.username;
         this.email = dbObjectRow.email;
