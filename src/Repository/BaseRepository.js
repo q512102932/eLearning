@@ -2,14 +2,8 @@
  * Base Repository is the base class for other repository
  */
 
-const AWS = require("aws-sdk");
-const Constants = require("../Common/Config/Constants");
-const LogHelper = require("../Common/Helper/LogHelper");
-const FormatResponse = require("../Common/Helper/ResponseHelper").formatResponse;
-
-const dynamoDbclient = new AWS.DynamoDB.DocumentClient();
-const Log = new LogHelper.LogHelper();
-const tableName = process.env.TableName;
+import { AWS, Constants, LogHelper, FormatResponse } from "../Common/Config/Config";
+import { TableName, DbClient, Logger } from "../Common/Config/Config";
 
 class BaseRepository {
     /**
@@ -17,10 +11,9 @@ class BaseRepository {
      * @param {*} pk 
      */
     async getAllItems(pk) {
-
         // Query Item which matches Query string in AWS DynamoDB
-        var requestItems = {
-            TableName: tableName,
+        var params = {
+            TableName: TableName,
             KeyConditionExpression: "PK = :pk",
             ExpressionAttributeValues: {
                 ":pk": pk
@@ -29,10 +22,10 @@ class BaseRepository {
 
         // Getting data
         try {
-            const data = await dynamoDbclient.query(requestItems).promise();
+            const data = await DbClient.query(params).promise();
 
             // Logging information
-            Log.Info(
+            Logger.Info(
                 "BaseRepository",
                 "DB query result:" + JSON.stringify(data),
                 "getAllItems()"
@@ -48,7 +41,7 @@ class BaseRepository {
         } catch (error) {
 
             //Logging Exception
-            Log.Exception(
+            Logger.Exception(
                 "BaseRepository",
                 `Status Code: ${Constants.ResponseCode.RESOURCE_NOT_FOUND}
                 Failed to query items by pk: ${error.stack}`,
@@ -67,10 +60,9 @@ class BaseRepository {
      * @param {*} indexName 
      */
     async getAllItemsByIndex(pkName, pkVal, indexName) {
-
         //Define requestItesm Params
-        var requestItems = {
-            TableName: tableName,
+        var params = {
+            TableName: TableName,
             IndexName: indexName,
             KeyConditionExpression: "#PK = :pkey ",
             ExpressionAttributeValues: {
@@ -84,10 +76,10 @@ class BaseRepository {
         // Getting data
         try {
             //Query Data
-            const data = await dynamoDbclient.query(requestItems).promise();
+            const data = await DbClient.query(params).promise();
 
             //Logging 
-            Log.Info(
+            Logger.Info(
                 "BaseRepository",
                 "DB query result:" + JSON.stringify(data),
                 "getAllItemsByIndex()"
@@ -103,7 +95,7 @@ class BaseRepository {
 
         } catch (error) {
             //Logging
-            Log.Exception(
+            Logger.Exception(
                 "BaseRepository",
                 `Status Code: ${Constants.ResponseCode.RESOURCE_NOT_FOUND}\n\r` +
                 `Failed to query items by pk: ${error.stack}`,
@@ -125,10 +117,9 @@ class BaseRepository {
      * @param {*} indexName 
      */
     async getItemByIndex(pkName, pkVal, skName, skVal, indexName) {
-
         // Define Query string
-        var requestItems = {
-            TableName: tableName,
+        var params = {
+            TableName: TableName,
             IndexName: indexName,
             KeyConditionExpression: pkName + " = :pkey and #skName = :skey",
 
@@ -145,10 +136,10 @@ class BaseRepository {
         // Getting data
         try {
             //Try to query data
-            const data = await dynamoDbclient.query(requestItems).promise();
+            const data = await DbClient.query(params).promise();
 
             //Logogging
-            Log.Verbose(
+            Logger.Verbose(
                 "BaseRepository",
                 "DB query result:" + JSON.stringify(data),
                 "getItemByIndex()"
@@ -156,7 +147,7 @@ class BaseRepository {
 
             if (data.Count > 0) {
                 //Logging
-                Log.Verbose(
+                Logger.Verbose(
                     "BaseRepository",
                     "DB query index result:" + JSON.stringify(data.Items[0]),
                     "getItemByIndex()"
@@ -168,7 +159,7 @@ class BaseRepository {
             }
         } catch (error) {
             //Logging
-            Log.Exception(
+            Logger.Exception(
                 "BaseRepository",
                 `Status Code: ${Constants.ResponseCode.RESOURCE_NOT_FOUND}\n\r` +
                 `Could not query index items by pk and name: ${error.stack}`,
@@ -188,8 +179,8 @@ class BaseRepository {
      */
     async getItem(pk, sk) {
         // Query String
-        var requestItems = {
-            TableName: tableName,
+        var params = {
+            TableName: TableName,
             KeyConditionExpression: "PK = :pkey and #Name = :skey",
             ExpressionAttributeNames: {
                 "#Name": "Name"
@@ -202,10 +193,10 @@ class BaseRepository {
 
         // Getting data
         try {
-            const data = await dynamoDbclient.query(requestItems).promise();
+            const data = await DbClient.query(params).promise();
 
             //console.log("DB query result:" + JSON.stringify(data));
-            Log.Info(
+            Logger.Info(
                 "BaseRepository",
                 "DB query result:" + JSON.stringify(data),
                 "getItem()"
@@ -215,7 +206,7 @@ class BaseRepository {
                 //  console.log(
                 //    "DB query returns result:" + JSON.stringify(data.Items[0])
                 //);
-                Log.Info(
+                Logger.Info(
                     "BaseRepository",
                     "DB query result:" + JSON.stringify(data.Items[0]),
                     "getItem()"
@@ -227,7 +218,7 @@ class BaseRepository {
             }
         } catch (error) {
             //Logging
-            Log.Exception(
+            Logger.Exception(
                 "BaseRepository",
                 `Status Code: ${Constants.ResponseCode.RESOURCE_NOT_FOUND}\n\r` +
                 `Could not query items by pk and name: ${error.stack}`,
@@ -246,12 +237,13 @@ class BaseRepository {
      * @param {*} sk 
      * @param {*} userId 
      */
+    //Todo
     async deleteItem(pk, sk, userId) {
         let isExists = false;
-        isExists = await this.ifExistsInDb(params.Key.PK, params.Key.Name);
+        isExists = await this.isExistsInDb(pk, sk);
 
         if (isExists) {
-            Log.Info(
+            Logger.Info(
                 "BaseRepository",
                 "DB query result:" + JSON.stringify(data),
                 "deleteItem"
@@ -274,7 +266,7 @@ class BaseRepository {
      */
     async putItem(Item, updateIfExist, EventCode, userPK) {
         // Logging
-        Log.Verbose(
+        Logger.Verbose(
             "BaseRepository",
             "Item :" + JSON.stringify(Item),
             "putItem()"
@@ -287,7 +279,7 @@ class BaseRepository {
         }
 
         var requestItems = {
-            TableName: tableName,
+            TableName: TableName,
             Item
         };
 
@@ -300,22 +292,22 @@ class BaseRepository {
         if (!isItemExist || (isItemExist && updateIfExist)) {
             try {
                 //Logging
-                Log.Verbose(
+                Logger.Verbose(
                     "BaseRepository",
                     "Item exists:" + isItemExist,
                     "putItem()"
                 );
 
                 //Update Data
-                const data = await dynamoDbclient.put(requestItems).promise();
+                const data = await DbClient.put(requestItems).promise();
 
                 //Logging
-                Log.Info("BaseRepository", "Item saved:" + JSON.stringify(data), "putItem()");
+                Logger.Info("BaseRepository", "Item saved:" + JSON.stringify(data), "putItem()");
 
                 return data;
             } catch (error) {
                 //Logging
-                Log.Exception(
+                Logger.Exception(
                     "BaseRepository",
                     `Status Code: ${Constants.ResponseCode.SERVICE_REQUEST_FAILURE}\n\rCould not put items: ${JSON.stringify(error)}`,
                     "",
@@ -330,7 +322,7 @@ class BaseRepository {
             //Logging: Item does not exist 
             //Jennifer: Logic problem ???
             if (!isItemExist) {
-                Log.Exception(
+                Logger.Exception(
                     "BaseRepository",
                     `Status Code: ${Constants.ResponseCode.RESOURCE_NOT_FOUND}\n\rItem not found: ${Item.PK}`,
                     "",
@@ -339,7 +331,7 @@ class BaseRepository {
 
                 return FormatResponse(Constants.ResponseCode.RESOURCE_NOT_FOUND, `Item not found: ${Item.PK}`);
             } else {
-                Log.Exception(
+                Logger.Exception(
                     "BaseRepository",
                     `Status Code: ${Constants.ResponseCode.SERVICE_REQUEST_FAILURE}\n\rItem already exists and not allowed to be updated: ${Item.PK}`,
                     "",
@@ -362,7 +354,7 @@ class BaseRepository {
 
         //Jennifer: Try Catch ????
         if (params) {
-            itemExist = await this.ifExistsInDb(params.Key.PK, params.Key.Name);
+            itemExist = await this.isExistsInDb(params.Key.PK, params.Key.Name);
         }
 
         //If Item Exists
@@ -370,7 +362,7 @@ class BaseRepository {
 
             //Query string
             var requestItems = {
-                TableName: tableName,
+                TableName: TableName,
                 ReturnConsumedCapacity: "TOTAL",
                 ReturnItemCollectionMetrics: "SIZE",
                 ReturnValues: "UPDATED_NEW"
@@ -381,16 +373,16 @@ class BaseRepository {
 
             //Update Item
             try {
-                Log.Verbose(
+                Logger.Verbose(
                     "BaseRepository",
                     "Item exists:" + itemExist,
                     "updateItem()"
                 );
 
-                const data = await dynamoDbclient.update(requestItems).promise();
+                const data = await DbClient.update(requestItems).promise();
 
                 //Logging
-                Log.Info(
+                Logger.Info(
                     "BaseRepository",
                     "Item saved:" + JSON.stringify(data),
                     "updateItem()"
@@ -401,7 +393,7 @@ class BaseRepository {
                     return data;
                 } else {
                     //Logging
-                    Log.Info(
+                    Logger.Info(
                         "BaseRepository",
                         `Status Code: ${Constants.ResponseCode.SUCCEED_OK}\n\rNo attribute has been updated.`,
                         "updateItem()"
@@ -412,7 +404,7 @@ class BaseRepository {
                 }
             } catch (error) {
                 //Logging
-                Log.Exception(
+                Logger.Exception(
                     "BaseRepository",
                     `Status Code: ${Constants.ResponseCode.SERVICE_REQUEST_FAILURE}\n\rCould not put items: ${JSON.stringify(error)}`,
                     "updateItem()"
@@ -423,7 +415,7 @@ class BaseRepository {
             }
         } else {
             //Logging
-            Log.Exception(
+            Logger.Exception(
                 "BaseRepository",
                 `Status Code: ${Constants.ResponseCode.RESOURCE_NOT_FOUND}\n\r` +
                 "Item not found:" +
@@ -451,12 +443,11 @@ class BaseRepository {
         if (name) {
             dbResult = await this.getItem(id, name);
 
-            Log.Info(
+            Logger.Info(
                 "BaseRepository",
                 "Found Item:" + JSON.stringify(dbResult),
                 "isExistsInDb()"
             );
-
         } else {
             dbResult = await this.getAllItems(id);
         }
@@ -479,10 +470,10 @@ class BaseRepository {
         let result = null;
 
         try {
-            const data = await dynamoDbclient.query(itemParams).promise();
+            const data = await DbClient.query(itemParams).promise();
 
             //Logging
-            Log.Info(
+            Logger.Info(
                 "BaseRepository",
                 "DB search result:" + JSON.stringify(data),
                 "searchItem()"
@@ -490,7 +481,7 @@ class BaseRepository {
 
             //Verify Data
             if (data.Count > 0) {
-                Log.Info(
+                Logger.Info(
                     "BaseRepository",
                     "DB search returns result:" + JSON.stringify(data.Items[0]),
                     "searchItem()"
@@ -502,7 +493,7 @@ class BaseRepository {
             }
         } catch (error) {
             //Logging
-            Log.Exception(
+            Logger.Exception(
                 "BaseRepository",
                 `Status Code: ${Constants.ResponseCode.SERVICE_REQUEST_FAILURE}\n\r` +
                 `Could not search items: ${JSON.stringify(error)} ` +

@@ -20,6 +20,7 @@ class User extends DataObject {
         this.pk = dbObjectRow.pk;
         this.username = dbObjectRow.username;
         this.email = dbObjectRow.email;
+
         this.profile = {
             phone: dbObjectRow.phone,
             gender: dbObjectRow.gender,
@@ -29,6 +30,7 @@ class User extends DataObject {
             programmingLevel: dbObjectRow.programmingLevel,
             enrolledCourses: dbObjectRow.enrolledCourses,
         };
+
         this.role = dbObjectRow.role;
         this.premium = dbObjectRow.premium;
         this.deactivated = dbObjectRow.deactivated;
