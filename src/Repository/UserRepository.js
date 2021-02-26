@@ -1,10 +1,11 @@
 const AWS = require("aws-sdk");
 const User = require("../Models/User");
 const BaseRepository = require("./BaseRepository");
-const Constants = require("../../Common/Constants");
+const Constants = require("../Common/Config/Constants");
 
-const LogHelper = require("../../Common/LogHelper");
+const LogHelper = require("../Common/Helper/LogHelper");
 const Log = new LogHelper.LogHelper();
+
 const {
     v4: uuidv4
 } = require('uuid');

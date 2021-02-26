@@ -1,10 +1,20 @@
 const DataObject = require("./DataObject");
 
+// Define User Class to extend base class
 class User extends DataObject {
+
+    /**
+     * 
+     */
     constructor() {
         super();
         this.profile = new Profile();
     }
+
+    /**
+     * 
+     * @param {*} dbObjectRow 
+     */
 
     PushDbObjectRow(dbObjectRow) {
         this.pk = dbObjectRow.pk;
