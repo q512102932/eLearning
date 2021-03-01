@@ -8,7 +8,7 @@ class User extends DataObject {
      */
     constructor() {
         super();
-        this.profile = new Profile();
+        this.profile = {};
     }
 
     /**
@@ -17,6 +17,7 @@ class User extends DataObject {
      */
 
     PushDbObjectRow(dbObjectRow) {
+        //TODO
         this.pk = dbObjectRow.pk;
         this.username = dbObjectRow.username;
         this.email = dbObjectRow.email;
