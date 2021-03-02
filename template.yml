@@ -34,6 +34,10 @@ Resources:
           AttributeType: S
         - AttributeName: Username
           AttributeType: S
+        - AttributeName: Email
+          AttributeType: S
+        - AttributeName: Version
+        - AttributeType: S
       KeySchema:
         - AttributeName: PK
           KeyType: HASH
@@ -44,10 +48,10 @@ Resources:
           KeySchema:
             - AttributeName: Email
               KeyType: HASH
-            - AttributeName: Username
+            - AttributeName: Version
               KeyType: RANGE
           Projection:
-            ProjectionType: ALL
+            ProjectionType: INCLUDE
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
@@ -55,8 +59,10 @@ Resources:
           KeySchema:
             - AttributeName: Username
               KeyType: HASH
+            - AttributeName: Version
+              KeyType: RANGE
           Projection:
-            ProjectionType: ALL 
+            ProjectionType: INCLUDE 
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
