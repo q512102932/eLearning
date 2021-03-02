@@ -37,7 +37,7 @@ Resources:
         - AttributeName: Email
           AttributeType: S
         - AttributeName: Version
-          AttributeType: S
+          AttributeType: N
       KeySchema:
         - AttributeName: PK
           KeyType: HASH
