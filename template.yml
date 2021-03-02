@@ -1,0 +1,113 @@
+########################################################################
+#  |  __ \ /\   |  __ \     /\   |  \/  |  ____|__   __|  ____|  __ \
+#  | |__) /  \  | |__) |   /  \  | \  / | |__     | |  | |__  | |__) |
+#  |  ___/ /\ \ |  _  /   / /\ \ | |\/| |  __|    | |  |  __| |  _  /
+#  | |  / ____ \| | \ \  / ____ \| |  | | |____   | |  | |____| | \ \
+#  |_| /_/    \_\_|  \_\/_/    \_\_|  |_|______|  |_|  |______|_|  \_\
+########################################################################
+Parameters:
+  CodeBucketName:
+    Type: String
+    Default: jennyelearningtest
+    Description: "[ParamOverride] The bucket name of source code."
+  CodeObjectKey:
+    Type: String
+    Default: /build/build.zip
+    Description: "[ParamOverride] The object key of source code."
+  LOGLEVEL:
+    Type: Integer
+    Default: 5
+
+Resources:
+  ########################################################################
+  #  |  __ \ \   / / \ | |   /\   |  \/  |/ __ \|  __ \|  _ \
+  #  | |  | \ \_/ /|  \| |  /  \  | \  / | |  | | |  | | |_) |
+  #  | |  | |\   / | . ` | / /\ \ | |\/| | |  | | |  | |  _ <
+  #  | |__| | | |  | |\  |/ ____ \| |  | | |__| | |__| | |_) |
+  #  |_____/  |_|  |_| \_/_/    \_\_|  |_|\____/|_____/|____/
+  ########################################################################
+  UserServiceTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: Version
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: Version
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: Email-index
+          KeySchema:
+            - AttributeName: Email
+              KeyType: HASH
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: Username-index
+          KeySchema:
+            - AttributeName: Username
+              KeyType: HASH
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 3
+      Tags:
+        - Key: ServiceName
+          Value: UsersService
+
+  # #######################################################################
+  #  | |  | |/ ____|  ____|  __ \ / ____/ ____|  ____|  __ \ \    / /_   _/ ____|  ____|/ ____|
+  #  | |  | | (___ | |__  | |__) | (___| (___ | |__  | |__) \ \  / /  | || |    | |__  | (___
+  #  | |  | |\___ \|  __| |  _  / \___ \\___ \|  __| |  _  / \ \/ /   | || |    |  __|  \___ \
+  #  | |__| |____) | |____| | \ \ ____) |___) | |____| | \ \  \  /   _| || |____| |____ ____) |
+  #   \____/|_____/|______|_|  \_\_____/_____/|______|_|  \_\  \/   |_____\_____|______|_____/
+  ########################################################################
+  CreateUserHanlder:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref CodeObjectKey
+      Description: Receives Cognito Post Confirm Sign Up Event.
+      Environment:
+        Variables:
+          TableName: !Ref UserServiceTable
+      FunctionName: !Sub "${AWS::StackName}-CreateUserHandler"
+      Handler: dist/UsersService/CreateUser.CreateUserHandler
+      Role: !GetAtt CreateUserHandlerRole.Arn
+      Runtime: nodejs14.x
+      Timeout: 30
+      Tags:
+        - Key: ServiceName
+          Value: UsersService
+  CreateUserHandlerRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      RoleName: !Sub "${AWS::StackName}-CreateUserHandlerRole"
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-CreateUserHandlerPolicy"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:PutItem"
+                  - "dynamodb:Query"
+                Resource:
+                  - !GetAtt UserServiceTable.Arn
