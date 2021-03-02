@@ -44,6 +44,8 @@ Resources:
           KeySchema:
             - AttributeName: Email
               KeyType: HASH
+          Projection:
+            ProjectionType: KEYS_ONLY
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
@@ -51,6 +53,8 @@ Resources:
           KeySchema:
             - AttributeName: Username
               KeyType: HASH
+          Projection:
+            ProjectionType: KEYS_ONLY
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
