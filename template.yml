@@ -95,7 +95,7 @@ Resources:
         Variables:
           TableName: !Ref UserServiceTable
       FunctionName: !Sub "${AWS::StackName}-CreateUserHandler"
-      Handler: dist/UsersService/CreateUser.CreateUserHandler
+      Handler: dist/UsersServices/CreateUser.CreateUserHandler
       Role: !GetAtt CreateUserHandlerRole.Arn
       Runtime: nodejs14.x
       Timeout: 30
@@ -127,3 +127,5 @@ Resources:
                   - "dynamodb:Query"
                 Resource:
                   - !GetAtt UserServiceTable.Arn
+                  - !Sub "${UserServiceTable.Arn}/index/Username-index"
+                  - !Sub "${UserServiceTable.Arn}/index/Email-index"
