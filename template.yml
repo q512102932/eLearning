@@ -12,7 +12,7 @@ Parameters:
     Description: "[ParamOverride] The bucket name of source code."
   CodeObjectKey:
     Type: String
-    Default: /build/build.zip
+    Default: build/build.zip
     Description: "[ParamOverride] The object key of source code."
   LOGLEVEL:
     Type: Number
