@@ -52,6 +52,8 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: INCLUDE
+            NonKeyAttributes:
+              - PK
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
@@ -63,6 +65,8 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: INCLUDE 
+            NonKeyAttributes:
+              - PK
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
