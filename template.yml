@@ -262,25 +262,7 @@ Resources:
             {
               "body": $input.body
             }
-        IntegrationResponses:
-          - ResponseTemplates:
-              application/json: '{"message": $input.json(''$'')}'
-            StatusCode: 200
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: !Sub "'https://${DomainName}'"
-          - ResponseTemplates:
-              application/json: '{"message": $input.path(''$.errorMessage'')}'
-            SelectionPattern: '\[Error\].*'
-            StatusCode: 400
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: !Sub "'https://${DomainName}'"
-          - ResponseTemplates:
-              application/json: '{"message": "Internal Error."}'
-            SelectionPattern: '\[Internal Error\].*'
-            StatusCode: 500
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: !Sub "'https://${DomainName}'"
-        IntegrationHttpMethod: POST
+      IntegrationHttpMethod: POST
         Type: AWS
         Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUserHanlder.Arn}/invocations'
       MethodResponses:
