@@ -42,6 +42,12 @@ Resources:
         - - !Ref "AWS::StackName"
           - RESTAPI
   RESTAPIDeploymentV1:
+    DependsOn:
+      - UsersProfileResource
+      - UsersCourseResource
+      - UsersPasswordResource
+      - UsersPremiumResource
+      - UsersActivateResource
     Type: "AWS::ApiGateway::Deployment"
     Properties:
       RestApiId: !Ref RESTAPI
