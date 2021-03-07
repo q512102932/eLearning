@@ -19,6 +19,33 @@ Parameters:
     Default: 5
 
 Resources:
+  # ***************************************************************
+  # *                                                             *
+  # * This is the basic lambda execution policy.                  *
+  # *                                                             *
+  # * If you are adding a lambda function role, make sure add the *
+  # * role to roles section here.                                 *
+  # *                                                             *
+  # ***************************************************************
+
+  BasicLambdaExecutionPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "arn:aws:logs:*:*:*"
+      PolicyName: !Join
+        - "-"
+        - - !Ref "AWS::StackName"
+          - BasicLambdaExecutionPolicy
+      Roles:
+        - !Ref CreateUserHandlerRole
   #  .----------------.  .----------------.  .----------------.   .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
   # | .--------------. || .--------------. || .--------------. | | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
   # | |      __      | || |   ______     | || |     _____    | | | |    ______    | || |      __      | || |  _________   | || |  _________   | || | _____  _____ | || |      __      | || |  ____  ____  | |
@@ -41,6 +68,9 @@ Resources:
         - "-"
         - - !Ref "AWS::StackName"
           - RESTAPI
+  
+  # This is for deploy to the API Gateway Stage, change the resource name every time if you are after a deployment
+  # IMPORTANT: Keep adding your API Gateway Methods into the DependsOn for deployment
   RESTAPIDeploymentV1:
     DependsOn:
       - PostUsers
@@ -162,7 +192,7 @@ Resources:
         - AttributeName: Email
           AttributeType: S
         - AttributeName: Version
-          AttributeType: S
+          AttributeType: N
       KeySchema:
         - AttributeName: PK
           KeyType: HASH
@@ -201,6 +231,7 @@ Resources:
       Tags:
         - Key: ServiceName
           Value: UsersService
+
 
   # #######################################################################
   #  | |  | |/ ____|  ____|  __ \ / ____/ ____|  ____|  __ \ \    / /_   _/ ____|  ____|/ ____|
@@ -255,18 +286,17 @@ Resources:
                   - "dynamodb:Query"
                 Resource:
                   - !GetAtt UserServiceTable.Arn
+                  - !Sub "${UserServiceTable.Arn}/index/Email-index"
+                  - !Sub "${UserServiceTable.Arn}/index/Username-index"
   # POST /users # API Gateway
   PostUsers:
     Type: "AWS::ApiGateway::Method"
     Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
       HttpMethod: POST
       Integration:
         Credentials: !GetAtt APIInvokeLambdaRole.Arn
-        RequestTemplates:
-          application/json: |-
-            {
-              "body": $input.body
-            }
         IntegrationHttpMethod: POST
         Type: AWS
         Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUserHanlder.Arn}/invocations'

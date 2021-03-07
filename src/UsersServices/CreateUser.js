@@ -75,8 +75,15 @@ exports.CreateUserHandler = async (event, context) => {
     user.EventCode = Constants.UserEventCode.CREATE;
     user.EventTimestamp = new Date().toUTCString();
     result = await userRepository.createUser(user, userId);
+    Log.Verbose(
+        "CreateUser",
+        `Result:. 
+        Event: ${JSON.stringify(result)}`,
+        `CreateUserHandler()`
+    );
     if (!result.error || typeof result.error === undefined) {
         return formatResponse(Constants.ResponseCode.SUCCEED_OK, "User Created Successfully!");
     }
+    
     return result;
 }
