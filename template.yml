@@ -41,6 +41,10 @@ Resources:
         - "-"
         - - !Ref "AWS::StackName"
           - RESTAPI
+  RESTAPIDeploymentV1:
+    Type: "AWS::ApiGateway::Deployment"
+    Properties:
+      RestApiId: !Ref RESTAPI
 
   # Defines the stage where deployment is going to be deployed to.
   RESTAPIStage:
