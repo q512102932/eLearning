@@ -259,7 +259,7 @@ Resources:
   PostUsers:
     Type: "AWS::ApiGateway::Method"
     Properties:
-      HttpMethod: GET
+      HttpMethod: POST
       Integration:
         Credentials: !GetAtt APIInvokeLambdaRole.Arn
         RequestTemplates:
