@@ -43,11 +43,7 @@ Resources:
           - RESTAPI
   RESTAPIDeploymentV1:
     DependsOn:
-      - UsersProfileResource
-      - UsersCourseResource
-      - UsersPasswordResource
-      - UsersPremiumResource
-      - UsersActivateResource
+      - PostUsers
     Type: "AWS::ApiGateway::Deployment"
     Properties:
       RestApiId: !Ref RESTAPI
