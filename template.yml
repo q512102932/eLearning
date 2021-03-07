@@ -14,11 +14,129 @@ Parameters:
     Type: String
     Default: build/build.zip
     Description: "[ParamOverride] The object key of source code."
-  LOGLEVEL:
+  LOG_LEVEL:
     Type: Number
     Default: 5
 
 Resources:
+  #  .----------------.  .----------------.  .----------------.   .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
+  # | .--------------. || .--------------. || .--------------. | | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
+  # | |      __      | || |   ______     | || |     _____    | | | |    ______    | || |      __      | || |  _________   | || |  _________   | || | _____  _____ | || |      __      | || |  ____  ____  | |
+  # | |     /  \     | || |  |_   __ \   | || |    |_   _|   | | | |  .' ___  |   | || |     /  \     | || | |  _   _  |  | || | |_   ___  |  | || ||_   _||_   _|| || |     /  \     | || | |_  _||_  _| | |
+  # | |    / /\ \    | || |    | |__) |  | || |      | |     | | | | / .'   \_|   | || |    / /\ \    | || | |_/ | | \_|  | || |   | |_  \_|  | || |  | | /\ | |  | || |    / /\ \    | || |   \ \  / /   | |
+  # | |   / ____ \   | || |    |  ___/   | || |      | |     | | | | | |    ____  | || |   / ____ \   | || |     | |      | || |   |  _|  _   | || |  | |/  \| |  | || |   / ____ \   | || |    \ \/ /    | |
+  # | | _/ /    \ \_ | || |   _| |_      | || |     _| |_    | | | | \ `.___]  _| | || | _/ /    \ \_ | || |    _| |_     | || |  _| |___/ |  | || |  |   /\   |  | || | _/ /    \ \_ | || |    _|  |_    | |
+  # | ||____|  |____|| || |  |_____|     | || |    |_____|   | | | |  `._____.'   | || ||____|  |____|| || |   |_____|    | || | |_________|  | || |  |__/  \__|  | || ||____|  |____|| || |   |______|   | |
+  # | |              | || |              | || |              | | | |              | || |              | || |              | || |              | || |              | || |              | || |              | |
+  # | '--------------' || '--------------' || '--------------' | | '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
+  #  '----------------'  '----------------'  '----------------'   '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
+  RESTAPI:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+      Description: eLearning API
+      EndpointConfiguration:
+        Types:
+          - EDGE
+      Name: !Join
+        - "-"
+        - - !Ref "AWS::StackName"
+          - RESTAPI
+
+  # Defines the stage where deployment is going to be deployed to.
+  RESTAPIStage:
+    Type: "AWS::ApiGateway::Stage"
+    Properties:
+      Description: Production
+      RestApiId: !Ref RESTAPI
+      StageName: prod
+  APIInvokeLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - apigateway.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Join
+            - "-"
+            - - !Ref "AWS::StackName"
+              - APIInvokeLambdaRole
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "lambda:InvokeFunction"
+                Resource: "*"
+  # ***************************************************************
+  # *                                                             *
+  # * API GW - Resources Section                                  *
+  # *                                                             *
+  # * This section defines the following structure.               *
+  # *                                                             *
+  # * /                                                           *
+  # * |- users                                                    *
+  # * |  |- profile                                               *
+  # * |  |- course                                                *
+  # * |  |- password                                              *
+  # * |  |- premium                                               *
+  # * |  |- activate                                              *
+  # *                                                             *
+  # ***************************************************************
+
+  # /users
+  UsersResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !GetAtt RESTAPI.RootResourceId
+      PathPart: users
+      RestApiId: !Ref RESTAPI
+
+  # /users/profile
+  UsersProfileResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref UsersResource
+      PathPart: profile
+      RestApiId: !Ref RESTAPI
+      
+  # /users/course
+  UsersCourseResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref UsersResource
+      PathPart: course
+      RestApiId: !Ref RESTAPI
+  
+  # /users/password
+  UsersPasswordResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref UsersResource
+      PathPart: password
+      RestApiId: !Ref RESTAPI
+
+  # /users/premium
+  UsersPremiumResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref UsersResource
+      PathPart: premium
+      RestApiId: !Ref RESTAPI
+
+  # /users/activate
+  UsersActivateResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref UsersResource
+      PathPart: activate
+      RestApiId: !Ref RESTAPI
+
   ########################################################################
   #  |  __ \ \   / / \ | |   /\   |  \/  |/ __ \|  __ \|  _ \
   #  | |  | \ \_/ /|  \| |  /  \  | \  / | |  | | |  | | |_) |
@@ -37,7 +155,7 @@ Resources:
         - AttributeName: Email
           AttributeType: S
         - AttributeName: Version
-          AttributeType: N
+          AttributeType: S
       KeySchema:
         - AttributeName: PK
           KeyType: HASH
@@ -64,7 +182,7 @@ Resources:
             - AttributeName: Version
               KeyType: RANGE
           Projection:
-            ProjectionType: INCLUDE 
+            ProjectionType: INCLUDE
             NonKeyAttributes:
               - PK
           ProvisionedThroughput:
@@ -84,6 +202,8 @@ Resources:
   #  | |__| |____) | |____| | \ \ ____) |___) | |____| | \ \  \  /   _| || |____| |____ ____) |
   #   \____/|_____/|______|_|  \_\_____/_____/|______|_|  \_\  \/   |_____\_____|______|_____/
   ########################################################################
+
+  # Create User Lambda function & API Gateway
   CreateUserHanlder:
     Type: "AWS::Lambda::Function"
     Properties:
@@ -94,6 +214,7 @@ Resources:
       Environment:
         Variables:
           TableName: !Ref UserServiceTable
+          LOG_LEVEL: !Ref LOG_LEVEL
       FunctionName: !Sub "${AWS::StackName}-CreateUserHandler"
       Handler: dist/UsersServices/CreateUser.CreateUserHandler
       Role: !GetAtt CreateUserHandlerRole.Arn
@@ -127,5 +248,51 @@ Resources:
                   - "dynamodb:Query"
                 Resource:
                   - !GetAtt UserServiceTable.Arn
-                  - !Sub "${UserServiceTable.Arn}/index/Username-index"
-                  - !Sub "${UserServiceTable.Arn}/index/Email-index"
+  # POST /users # API Gateway
+  PostUsers:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: AWS_IAM
+      HttpMethod: GET
+      Integration:
+        Credentials: !GetAtt APIInvokeLambdaRole.Arn
+        RequestTemplates:
+          application/json: |-
+            {
+              "body": $input.body
+            }
+        IntegrationResponses:
+          - ResponseTemplates:
+              application/json: '{"message": $input.json(''$'')}'
+            StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: !Sub "'https://${DomainName}'"
+          - ResponseTemplates:
+              application/json: '{"message": $input.path(''$.errorMessage'')}'
+            SelectionPattern: '\[Error\].*'
+            StatusCode: 400
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: !Sub "'https://${DomainName}'"
+          - ResponseTemplates:
+              application/json: '{"message": "Internal Error."}'
+            SelectionPattern: '\[Internal Error\].*'
+            StatusCode: 500
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: !Sub "'https://${DomainName}'"
+        IntegrationHttpMethod: POST
+        Type: AWS
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUserHanlder.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: "200"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+        - StatusCode: "400"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+        - StatusCode: "500"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+      OperationName: CreateUser
+      ResourceId: !Ref UsersResource
+      RestApiId: !Ref RESTAPI
