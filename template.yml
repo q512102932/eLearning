@@ -56,6 +56,7 @@ Resources:
   RESTAPIStage:
     Type: "AWS::ApiGateway::Stage"
     Properties:
+      DeploymentId: !Ref RESTAPIDeploymentV1
       Description: Production
       RestApiId: !Ref RESTAPI
       StageName: prod
