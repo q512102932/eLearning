@@ -260,7 +260,6 @@ Resources:
     Type: "AWS::ApiGateway::Method"
     Properties:
       ApiKeyRequired: false
-      AuthorizationType: AWS_IAM
       HttpMethod: GET
       Integration:
         Credentials: !GetAtt APIInvokeLambdaRole.Arn
