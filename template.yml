@@ -14,7 +14,7 @@ Parameters:
     Type: String
     Default: build/build.zip
     Description: "[ParamOverride] The object key of source code."
-  LOG_LEVEL:
+  LOGLEVEL:
     Type: Number
     Default: 5
 
@@ -214,7 +214,7 @@ Resources:
       Environment:
         Variables:
           TableName: !Ref UserServiceTable
-          LOG_LEVEL: !Ref LOG_LEVEL
+          LOG_LEVEL: !Ref LOGLEVEL
       FunctionName: !Sub "${AWS::StackName}-CreateUserHandler"
       Handler: dist/UsersServices/CreateUser.CreateUserHandler
       Role: !GetAtt CreateUserHandlerRole.Arn
