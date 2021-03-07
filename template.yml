@@ -262,7 +262,7 @@ Resources:
             {
               "body": $input.body
             }
-      IntegrationHttpMethod: POST
+        IntegrationHttpMethod: POST
         Type: AWS
         Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUserHanlder.Arn}/invocations'
       MethodResponses:
